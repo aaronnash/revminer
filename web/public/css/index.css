@@ -1,0 +1,242 @@
+html, body, div, span, h1, h2, h3, h4, p,
+a, em, img, small, strong, b, u, i, center,
+form, label, table, thead, tr, th, td
+{
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+	outline: 0;
+}
+body {
+	line-height: 1;
+	font-size: 1.05em;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+
+button, input, select, textarea { margin: 0; outline: 0; }
+
+::selection { background:#FF5E99; color:#fff; text-shadow: none; }
+
+body, select, input, textarea {
+	font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+a {
+	color: #117700;
+	font-family: 'Helvetica Neue', Helvetica, Arial, default;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+b { font-weight: 600; }
+
+h1 {
+	font-family: 'century gothic', 'Verdana', helvetica, arial, sans-serif;
+	font-size: 24px;
+	color: SlateGray;
+}
+
+td {
+	padding-bottom: 12px;
+	padding-right: 10px;
+}
+
+.attribute {
+	color: #ff6600;
+	white-space: nowrap;
+}
+
+#feedbackArea {
+  position:absolute;
+  top: 5px;
+  right: 10px;
+  display:block;
+}
+
+#feedbackBox {
+	border: #3867CB solid 1px;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+	border-radius: 3px;
+	font-size: 17px;
+	resize:none;
+}
+
+#searchBox {
+	behavior: url('/css/PIE.htc');
+	-moz-border-radius: 3px 0 0 3px;
+	border-radius: 3px 0 0 3px;
+	height: 23px;
+	width: 403px;
+	border: #18AB47 solid 1px;
+	border-right: 0;
+	padding: 4px 6px 5px 6px;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+	font-size: 17px;
+	float: left;
+}
+
+#searchArea {
+	margin: auto;
+	width: 450px;
+	height: 35px;
+}
+
+#searchButton {
+	behavior: url('/css/PIE.htc');
+	height: 34px;
+	width: 34px;
+	float: right;
+	background: url('../search.png') no-repeat;
+	cursor: pointer;
+	text-align: center;
+	-moz-border-radius: 0 3px 3px 0;
+	border-radius: 0 3px 3px 0;
+	border: #18AB47 solid 1px;
+	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2); /* update PIE3 when they support alpha here */
+}
+
+#searchButton:active {
+	background-position: 0 -32px;
+}
+
+#logo {
+	margin: auto;
+	margin-top: 20px;
+	margin-bottom: 18px;
+	width: 173px;
+	cursor: pointer;
+}
+
+#paper {
+	behavior: url('/css/PIE.htc');
+	text-align: left;
+	width: 900px;
+  display: inline-block;
+	overflow: auto;
+	margin: 25px;
+	padding: 5px;
+	border: 50px solid transparent;
+	-o-border-image: url("../paper.png") 50;
+	-webkit-border-image: url("../paper.png") 50;
+	-moz-border-image: url("../paper.png") 50;
+	border-image: url("../paper.png") 50; /* known bug: border-image doesn't show on ie9 */
+}
+
+h2 {
+	font-weight: 600;
+	margin-top: 2px;
+	margin-bottom: 12px;
+	font-size: 80%;
+}
+
+p {
+	margin-bottom: 2px;
+}
+
+#extractions {
+	overflow: hidden;
+	padding-right: 16px;
+}
+
+#similar {
+	float: right;
+	padding-left: 23px;
+	padding-right: 2px;
+	border-left: 1px solid #D3E1F9;
+	height: 480px;
+	font-size: 14px;
+}
+
+#similar a {
+	font-size: 1.2em;
+}
+
+#content {
+	overflow: hidden;
+	padding-left: 25px;
+}
+
+#sidebar {
+	float: left;
+  padding-right: 23px;
+  padding-left: 2px;
+  border-right: 1px solid #D3E1F9;
+  height: 480px;
+  width: 200px;
+  font-size: 14px;
+}
+
+.sb_elem {
+  color: #ff6600;
+  font-size: 20px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sb_elem:hover {
+  text-decoration: underline;
+}
+
+h3 {
+	color: #ff6600;
+	font-size: 20px;
+	margin-bottom: 10px;
+}
+
+h4 {
+	color: #000000;
+	font-size: 20px;
+	margin-bottom: 10px;
+}
+
+#examples {
+	float: left;
+	margin-right: 21px;
+	width: 420px;
+	min-height: 550px;
+}
+
+#diagram {
+	float: left;
+}
+
+sub {
+	font-size: small;
+}
+
+#tt {
+  position:absolute;
+  display:block;
+  background:url(images/tt_left.gif) top left no-repeat;
+}
+#tttop {
+  display:block;
+  height:5px;
+  margin-left:5px;
+  background:url(images/tt_top.gif) top right no-repeat;
+  overflow:hidden;
+}
+#ttcont {
+  display:block;
+  padding:2px 12px 3px 7px;
+  margin-left:5px;
+  background:#666;
+  color:#fff;
+}
+#ttbot {
+  display:block;
+  height:5px;
+  margin-left:5px;
+  background:url(images/tt_bottom.gif) top right no-repeat;
+  overflow:hidden;
+}
