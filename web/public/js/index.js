@@ -500,33 +500,105 @@ socket.on('suggestions', function(msg) {
 		outputHtml(msg[0]);
 });
 
+function getIconUri(id) {
+  result = 'http://google-maps-icons.googlecode.com/files/red';
+  if (id <= 100) {
+    if (id < 10)
+      result += '0';
+    result += id.toString() + '.png'
+  } else {
+    // these icons only go up to 100
+    result += 'blank.png';
+  }
+  return result
+}
+
 socket.on('results', function(msg) {
-	var serverMsg = '<h3>Processed Query: ' + msg.query + ' in ' + msg.time + 'ms (' + msg.num + ' results)</h3>';
+
+  var serverMsg = '<div id="similar"><h3>Map</h3><div id="map_canvas" style="width:300px; height:300px"></div>'
+  if (msg.suggestions.length > 0)
+    serverMsg += '<br><h3>Name Matches</h3>' + makeClickable(msg.suggestions)
+  serverMsg += '</div><div id="extractions">';
+
+	serverMsg += '<h3>Processed Query: ' + msg.query + ' in ' + msg.time + 'ms (' + msg.num + ' results)</h3>';
 	serverMsg += '<table id="results"><tr>';
-	serverMsg += '<td id="sort-name" style="color:#0000AA" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'placeName\', 0, this);">Restaurant Name</td>';
+  serverMsg += '<td id="sort-id" style="color:#0000AA" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'placeId\', 0, this);">ID</td>';
+	serverMsg += '<td id="sort-name" style="color:#0000AA" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'placeName\', 1, this);">Restaurant Name</td>';
 	//serverMsg += '<td id="sort-score" style="color:#000000; text-decoration:underline" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'score\', 1, this);">Relevance</td> &nbsp;';
 	serverMsg += '<td id="sort-open" style="color:#0000AA" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'isOpen\', 2, this);">Open</td>';
 	if (myLat && myLong) serverMsg += '<td id="sort-distance" style="color:#0000AA; cursor: pointer"  onclick="sortBy(\'distance\', 3, this);">Distance</td> &nbsp;';
 	serverMsg += '<td id="sort-price" style="color:#0000AA" onmouseover="this.style.cursor=\'pointer\'" onclick="sortBy(\'price\', 4, this);">Price</td> &nbsp;';
-	var count = 1;
-	for (var placeName in msg.data) {
-		serverMsg += '<tr id=result_' + count + '><td class="placeName"><a href="#" onclick="return exampleClicked(this);">' + prettyPlaceName(placeName, msg.meta[placeName]['Address']) + '</a></td>';
-	//	serverMsg += '<td class="score">' + msg.data[placeName] + '</td>&nbsp;&nbsp;';
-		serverMsg += '<td class="isOpen">' + getOpen(msg.meta[placeName], true) + '</td>';
-		if (myLat && myLong)
-		    serverMsg += '<td class="distance">' + getLocation(msg.meta[placeName]) + '</td>&nbsp;&nbsp;';
-		if (msg.meta[placeName]['Price Range'])
-		    serverMsg += '<td class="price">' + msg.meta[placeName]['Price Range'] + '</td>';
-		serverMsg += '</tr>'
-		count++;
-	}
-	serverMsg += '</table>';
 
-	if (msg.suggestions.length > 0) {
-		serverMsg = '<div id="similar"><h3>Name Matches</h3>' + makeClickable(msg.suggestions) + '</div><div id="extractions">' + serverMsg + '</div>';
+	var id = 1;
+	for (var placeName in msg.data) {
+    var meta = msg.meta[placeName]
+		serverMsg += '<tr id=result_' + id + '>';
+    serverMsg += '<td class="placeId"><img src="' + getIconUri(id) + '"></td>';
+    serverMsg += '<td class="placeName" style="verticalAlign:bottom"><a href="#" onclick="return exampleClicked(this);">' + prettyPlaceName(placeName, msg.meta[placeName]['Address']) + '</a></td>';
+		serverMsg += '<td class="isOpen">' + getOpen(meta, true) + '</td>';
+		if (myLat && myLong)
+		    serverMsg += '<td class="distance">' + getLocation(meta) + '</td>&nbsp;&nbsp;';
+		if (meta['Price Range'])
+		    serverMsg += '<td class="price">' + meta['Price Range'] + '</td>';
+		serverMsg += '</tr>'
+		id++;
 	}
+
+	serverMsg += '</table></div>';
+
 	outputHtml(serverMsg);
+
+  var map = new google.maps.Map(document.getElementById("map_canvas"), {
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+          });
+
+  var bounds = new google.maps.LatLngBounds();
+
+  id = 1;
+  for (var placeName in msg.data) {
+    var meta = msg.meta[placeName]
+    if (meta['Latitude'] && meta['Longitude']) {
+      var position = addMapMarker(meta, placeName, map, id);
+      bounds.extend(position)
+    }
+    id++;
+  }
+
+  map.fitBounds(bounds);
+
 });
+
+var curOpenInfoWindow = null;
+
+function addMapMarker(meta, placeName, map, id) {
+  var ppN = prettyPlaceName(placeName, meta['Address']);
+  var position = new google.maps.LatLng(meta['Latitude'], meta['Longitude']);
+
+  var contentString = '<div><a href="#" onclick="return exampleClicked(this);">' + ppN + '</a></p>'+
+                      '<div><h2>' + meta['Address'] + '</h2></div>'+
+                      '</div>';
+
+  var infoWindow = new google.maps.InfoWindow({
+      content: contentString
+  });
+
+  var marker = new google.maps.Marker({
+      position: position,
+      map: map,
+      title: ppN,
+      icon: getIconUri(id)
+  });
+
+  google.maps.event.addListener(marker, 'click', function() {
+    if (curOpenInfoWindow)
+      curOpenInfoWindow.close();
+    infoWindow.open(map, marker);
+    curOpenInfoWindow = infoWindow;
+  });
+
+  return position;
+}
+
 socket.on('connect', function() {
 	var searchBox = document.getElementById('searchBox');
 	if (searchBox.value.length > 0)
@@ -694,7 +766,8 @@ function search(isChange) {
 			outputHtml(DEFAULT_MSG);
 		}
 		//if (socket.connected) {
-			socket.emit(ev, {text: searchBoxVal.replace('not ', '!'), loc: {latitude: myLat, longitude: myLong}});
+      socket.emit(ev, {text: searchBoxVal.replace('not ', '!'), loc: {latitude: myLat, longitude: myLong}});
+			//socket.emit(ev, searchBoxVal.replace('not ', '!'));
 		//}
 	}
 	if (!isChange) {
