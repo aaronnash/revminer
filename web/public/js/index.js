@@ -521,6 +521,7 @@ socket.on('results', function(msg) {
 		count++;
 	}
 	serverMsg += '</table>';
+
 	if (msg.suggestions.length > 0) {
 		serverMsg = '<div id="similar"><h3>Name Matches</h3>' + makeClickable(msg.suggestions) + '</div><div id="extractions">' + serverMsg + '</div>';
 	}
@@ -529,7 +530,7 @@ socket.on('results', function(msg) {
 socket.on('connect', function() {
 	var searchBox = document.getElementById('searchBox');
 	if (searchBox.value.length > 0)
-		socket.emit('search', {text: earchBox.value.replace('not ', '!'), loc: {latitude: myLat, longitude: myLong}});
+		socket.emit('search', {text: searchBox.value.replace('not ', '!'), loc: {latitude: myLat, longitude: myLong}});
 });
 
 function sortBy(characteristic, index, elem) {

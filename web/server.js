@@ -469,7 +469,7 @@ io.sockets.on('connection', function(client) {
         var interesting = false;
         if (typeof(query) === 'object') {
           // query for interesting values
-          query = query[0];
+          query = query['text'];
           interesting = true;
           console.log('search for interesting values: ' + query);
         } else {
