@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="description" content="RevMiner, a University of Washington information extractor for user reviews" />
+	<title>Review Miner</title>
+	<link rel="stylesheet" href="css/index.css" type="text/css">
+	<script type="text/javascript" src="socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBz8Ed24pgONwuUNkF5X7LHPzMBGH636Og&sensor=true">
+    </script>
+	<!--[if IE 9]>
+		<style>#paper { border: 3px solid #ddd; padding: 30px; }</style>
+	<![endif]-->
+</head>
+<body id='home'>
+
+<div id='logo'>
+	<img height='43' width='173' src='logo.png' onclick='return exampleClicked(this)' alt="revminer logo">
+</div>
+<div id='feedbackArea'>
+	<p onclick='toggleFeedback();' style="color:#3867CB; cursor: pointer; text-align: right;"> Got Feedback? </p>
+	<div id='feedbackForm' style="display:none;">
+		<textarea id='feedbackBox' rows="5" cols="25"></textarea>
+		<br/>
+		<input type="button" value="Submit!" style="cursor: pointer;" onclick='submitFeedback();'>
+	</div>
+</div>
+<div id='searchArea'>
+	<input type='text' id='searchBox' onkeyup='search(true)' onkeydown='if (event.keyCode == 13) search()' autofocus>
+	<input type='submit' id='searchButton' value='' onclick='search()'>
+</div>
+
+<center>
+<span id="paper">
+<div id="serverMsg">
+	<div id="examples">
+		<p><b>RevMiner</b> is a University of Washington <a href='http://www.cs.washington.edu/research/knowitall/'>KnowItAll</a> project by <a href='http://jeffhuang.com/'>Jeff Huang</a>, <a href='http://www.cs.washington.edu/homes/etzioni/'>Oren Etzioni</a>, <a href='http://www.cs.washington.edu/homes/lsz/'>Luke Zettlemoyer</a>, <font color=#117700>Kevin Clark</font>, and <font color=#117700>Christian Lee</font></p><br>
+		<p><b>RevMiner</b> is an unsupervised extractor for user reviews about places in Seattle, like restaurants and stores</p><br>
+		<br><br>
+		<p>Try these <b>examples</b>:</p>
+		<p><a href='#' onclick='return exampleClicked(this)'>good dim sum</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>agua verde cafe</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>cheap indian food</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>great view clean rooms comfortable bed great location</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>elliott bay book</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>mexican</a></p>
+		<p><a href='#' onclick='return exampleClicked(this)'>free parking friendly staff fresh fish</a></p>
+	</div>
+	<div id="diagram">
+		<img src="diagram.png" width='390' height='559' alt="revminer data flow diagram">
+	</div>
+</div>
+</span>
+</center>
+</body>
+</html>
