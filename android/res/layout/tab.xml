@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/tabsLayout"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:padding="10dip"
+	android:gravity="center"
+	android:orientation="vertical"
+	android:background="@drawable/tab_bg_selector"
+	>
+
+    <!--  unfortunately there doesn't seem to be an easy way to selectively
+          set the textStyle from bold / not bold depending on the button's
+          selection state -->
+          
+	<TextView
+	    android:id="@+id/tabsText"
+	    android:layout_width="wrap_content"
+	    android:layout_height="wrap_content"
+	    android:text="Label"
+	    android:textColor="@drawable/tab_text_selector"
+	    android:textStyle="bold"
+	    android:textSize="16dip" />
+
+</LinearLayout>

@@ -3,8 +3,14 @@ package revminer.common;
 import java.util.HashMap;
 
 public class Restaurant  {
+	private String name;
+	
+	public Restaurant(String name) {
+		this.name = name;
+	}
+	
 	public String getName() {
-		throw new RuntimeException("Not Implmented");
+		return name;
 	}
 	
 	public RestaurantLocation getLocation() {

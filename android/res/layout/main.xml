@@ -1,14 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/tabhost"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="horizontal" >
+    android:layout_gravity="fill"
+    android:fillViewport="true">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        
+	<ImageView
+	    android:id="@+id/logo"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:src="@drawable/logo"
+	    android:background="@android:color/white"
+	    android:padding="5px"/>"
+        
+	<LinearLayout
+	    android:id="@+id/search"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="horizontal"
+	    android:background="#ffffff">
+	      
+	    <EditText
+	        android:id="@+id/searchBox"
+	        android:layout_width="fill_parent"
+	        android:layout_height="40dp"
+	        android:layout_weight="1"
+	        android:hint="Enter search here..."
+	        android:singleLine="true"
+	        android:imeOptions="actionDone"
+	        android:background="@drawable/searchbox_bg"/>
+	    
+		    <ImageButton
+		        android:id="@+id/searchBtn"
+		        android:layout_width="80dp"
+		        android:layout_height="40dp"
+		        android:layout_weight="1"
+		        android:background="#000000"
+		        android:clickable="true"
+		        android:padding="1px"
+		        android:scaleType="fitXY"
+		        android:src="@drawable/searchbtn"
+		        android:onClick="search"/>
 
-        <TextView
-            android:id="@+id/textView1"
-            android:layout_width="match_parent"
-            android:layout_height="100px"
-            android:text="Hello World"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+	</LinearLayout>
+        
+        <TabWidget
+            android:id="@android:id/tabs"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
 
-</LinearLayout>
+        <FrameLayout
+            android:id="@android:id/tabcontent"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+		    android:layout_gravity="fill"
+		    android:fillViewport="true"
+            android:padding="0dp" />
+    </LinearLayout>
+</TabHost>

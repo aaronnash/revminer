@@ -22,6 +22,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ViewMapActivity" android:theme="@android:style/Theme.NoTitleBar"></activity>
+        <activity android:name=".ResultsActivity" android:theme="@android:style/Theme.NoTitleBar"></activity>
+        <activity android:name="HistoryActivity" android:theme="@android:style/Theme.NoTitleBar"></activity>
     </application>
 
 </manifest>
