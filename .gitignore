@@ -6,7 +6,12 @@
 *.7z
 *.sh
 *.md
-*.java
+DirectoryTagger.java
+/android/.classpath
+/android/.project
+/android/.settings
+/android/bin/
+/android/src/.metadata/
 /web/attributeMapping
 /web/extractionsData
 /web/feedback.txt
