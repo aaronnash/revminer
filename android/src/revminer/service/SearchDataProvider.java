@@ -11,7 +11,12 @@ public interface SearchDataProvider {
    *    results are available
    */
   public void addSearchResultListener(SearchResultListener listener);
-  
+
+  /**
+   * @return Last {@link SearchResultEvent} fired, or null if none.
+   */
+  public SearchResultEvent getLastSearchResultEvent();
+
   public void addSearchListener(SearchListener listener);
 
   /**

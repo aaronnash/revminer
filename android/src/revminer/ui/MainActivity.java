@@ -6,6 +6,7 @@ import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.KeyEvent;
@@ -39,6 +40,8 @@ public class MainActivity extends TabActivity {
 	            return false;
 	        }
 	    });
+		
+		Log.d("revd", "MainActivity.onCreate()");
 	}
 	
 	private void createTab(String label, Class<?> contentActivity) {
@@ -65,8 +68,8 @@ public class MainActivity extends TabActivity {
 		if (searchBox.getText().toString().isEmpty())
 			return;
 		
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
+    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+    imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
 		RevminerClient.Client().sendSearchQuery(searchBox.getText().toString(), getApplicationContext());
 		searchBox.setText("");		
 	}

@@ -24,6 +24,23 @@ public class SearchHistory {
 		return when;
 	}
 	
+	public String serialize() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append(Long.toString(when.getTime()));
+	  sb.append("|");
+	  sb.append(query);
+
+	  return sb.toString();
+	}
+
+	 public static SearchHistory deserialize(String s) {
+	   String[] parts = s.split("\\|", 2);
+	   Date date = new Date(Long.parseLong(parts[0]));
+	   String query = parts[1];
+
+	   return new SearchHistory(query, date);
+	  }
+	
 	public String getWhenStr() {
 		// this method is technically a little bit flawed for certain edge cases, but it's simple and good enough for now
 		int deltaDays = (int)((new Date().getTime() - when.getTime()) / MILLSECS_PER_DAY);
@@ -55,5 +72,20 @@ public class SearchHistory {
 		} else {
 			return "1 year+";
 		}
+	}
+
+	/**
+	 * @return other instanceof SearchHistory
+	 *     && this.getQuery.equals(other.getQuery())
+	 */
+	@Override
+	public boolean equals(Object other) {
+	  if (!(other instanceof SearchHistory)) {
+	    return false;
+	  }
+
+	  SearchHistory searchHistory = (SearchHistory)other;
+
+	  return getQuery().equals(searchHistory.getQuery());
 	}
 }
