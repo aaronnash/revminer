@@ -24,9 +24,9 @@ public class Restaurant  {
 	private final RestaurantLocation location;
 	private final HashMap<String, String> attributes;
 
-	public Restaurant(String name) {
-    this(name, new RestaurantLocation(), "", new HashMap<String, String>());
-  }
+//	public Restaurant(String name) {
+//    this(name, new RestaurantLocation(), "", new HashMap<String, String>());
+//  }
 
 	public Restaurant(String name, RestaurantLocation location,
 	    String phoneNumber, Map<String, String> attributes) {
@@ -86,8 +86,7 @@ public class Restaurant  {
 	    location = new RestaurantLocation(
 	        latitude, longitude, address, city, state);	    
 	  } else { // No location available
-	    Log.d("revd", "No location available for " + name);
-	    location = new RestaurantLocation();
+	    location = null;
 	  }
 
 	  // Create the new restaurant object and cache it
@@ -101,6 +100,7 @@ public class Restaurant  {
 		return name;
 	}
 
+	// may return null
 	public RestaurantLocation getLocation() {
 		return location;
 	}

@@ -1,5 +1,8 @@
 package revminer.common;
 
+import android.location.Location;
+import android.util.Log;
+
 public class RestaurantLocation {
   private final double latitude;
   private final double longitude;
@@ -7,10 +10,8 @@ public class RestaurantLocation {
   private final String city;
   private final String state;
   private final int zipCode;
-
-  public RestaurantLocation() { // TODO: replace with functional constructor
-    this(30d * Math.random(), 30d * Math.random(), "Addr", "Seattle", "WA");
-  }
+  
+  public static float METERS_PER_MILE = (float)1609.344;
 
   public RestaurantLocation(double latitude, double longitude,
       String streetAddress, String city, String state) {
@@ -62,5 +63,15 @@ public class RestaurantLocation {
 	 */
 	public int getZipCode() {
 		return zipCode;
+	}
+	
+	// TODO: this could be further enhanced to also return the bearing.. but we'll save that for another time...
+	// returns distance in miles
+	public float getDistance(Location from) {
+		float[] results = new float[1];
+		
+		Location.distanceBetween(latitude, longitude, from.getLatitude(), from.getLongitude(), results);
+		
+		return results[0] / METERS_PER_MILE;
 	}
 }
