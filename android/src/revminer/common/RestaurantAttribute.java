@@ -1,23 +1,45 @@
 package revminer.common;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class RestaurantAttribute {
-	public enum AttributeRating {
-		ATTRIBUTE_EXTREMELY_POSITIVE,
-		ATTRIBUTE_POSITIVE,
-		ATTRIBUTE_NUETRAL,
-		ATTRIBUTE_NEGATIVE,
-		ATTRIBUTE_EXTREMLY_NEGATIVE,
-	};
-	
+  private final String name;
+  private final List<AttributeValue> values;
+
+  public RestaurantAttribute(String name, List<AttributeValue> values) {
+    this.name = name;
+    // Defense copy + store as an immutable list
+    this.values = Collections.unmodifiableList(new ArrayList<AttributeValue>(values));
+  }
+
 	public String getName() {
-		throw new RuntimeException("Not Implemented");
+		return name;
 	}
-	
-	public int getCount() {
-		throw new RuntimeException("Not Implemented");
+
+	public List<AttributeValue> getValues() {
+	  return values;
 	}
-	
-	public AttributeRating getRating() {
-		throw new RuntimeException("Not Implemented");
+
+	/**
+	 * Returns a string representation of the object for debugging purposes.
+	 */
+	@Override
+	public String toString() {
+	  StringBuilder sb = new StringBuilder();
+	  sb.append("{\"" + name + "\": ");
+	  for (AttributeValue value : getValues()) {
+	    sb.append(value.toString());
+	    sb.append(", ");
+	  }
+
+	  if (getValues().size() > 0) {
+	    sb.delete(sb.length() - 2, sb.length());
+	  }
+
+	  sb.append("}");
+
+	  return sb.toString();
 	}
 }
