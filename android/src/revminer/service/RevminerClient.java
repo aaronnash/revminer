@@ -57,10 +57,7 @@ public class RevminerClient implements SearchDataProvider {
 	}
 
 	// TODO: remove context from this interface once we actually implement the query logic
-	public boolean sendSearchQuery(String query, Context context) {
-		// TODO: actually perform query instead of making this little popup
-        Toast.makeText(context, "Query: \"" + query +"\"", Toast.LENGTH_SHORT).show();
-
+	public boolean sendSearchQuery(String query) {
         for (SearchListener listener : searchListeners)
         	listener.onSearch(query);
 
