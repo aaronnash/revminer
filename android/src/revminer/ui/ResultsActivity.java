@@ -59,11 +59,17 @@ public class ResultsActivity extends ListActivity {
 	                    
 	                    restaurantName.setText(r.getName());
 	                    
-	                    // TODO: determine open/closed status of restaurant
+	                    // TODO: properly determine open hours
+//	                    String hours = r.getAttributes().get("Hours");
+//	                    if (hours == null)
+//	                    	hours = "";
+//	                    status.setText(hours);
 	                    status.setText("");
 	                    
-	                    // TODO: lookup price of restaurant
-	                    price.setText("$$");
+	                    String priceRange = r.getAttributes().get("Price Range");
+	                    if (priceRange == null)
+	                    	priceRange = "";
+	                    price.setText(priceRange);
 	                    
 	                    Location curLocation = GPSClient.Client().getLocation();
 	                    

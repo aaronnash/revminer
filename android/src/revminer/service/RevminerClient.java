@@ -56,7 +56,6 @@ public class RevminerClient implements SearchDataProvider {
 		searchListeners.add(listener);
 	}
 
-	// TODO: remove context from this interface once we actually implement the query logic
 	public boolean sendSearchQuery(String query) {
         for (SearchListener listener : searchListeners)
         	listener.onSearch(query);
