@@ -4,20 +4,27 @@ import java.util.Date;
 
 public class SearchHistory {
 	private String query;
+	private String friendlyName;
 	private Date when;
 	private final long MILLSECS_PER_DAY = 24 * 60 * 60 * 1000;
 	
-	public SearchHistory(String query, Date when) {
+	public SearchHistory(String query, String friendlyName, Date when) {
 		this.query = query;
+		this.friendlyName = friendlyName;
 		this.when = when;
 	}
 	
-	public SearchHistory(String query) {
-		this(query, new Date());
+	public SearchHistory(String query, String friendlyName) {
+		this(query, friendlyName, new Date());
 	}
 	
 	public String getQuery() {
 		return query;
+	}
+	
+	// may be null
+	public String getFriendlyName() {
+		return friendlyName;
 	}
 	
 	public Date getWhen() {
@@ -29,16 +36,25 @@ public class SearchHistory {
 	  sb.append(Long.toString(when.getTime()));
 	  sb.append("|");
 	  sb.append(query);
+	  sb.append("|");
+	  sb.append(friendlyName);
 
 	  return sb.toString();
 	}
 
 	 public static SearchHistory deserialize(String s) {
-	   String[] parts = s.split("\\|", 2);
+	   String[] parts = s.split("\\|", 3);
 	   Date date = new Date(Long.parseLong(parts[0]));
 	   String query = parts[1];
+	   String friendlyName;
+	   if (parts.length > 2 && parts[2].length() > 0) {
+		   friendlyName = parts[2];
+	   } else {
+		   friendlyName = null;
+	   }
+		   
 
-	   return new SearchHistory(query, date);
+	   return new SearchHistory(query, friendlyName, date);
 	  }
 	
 	public String getWhenStr() {

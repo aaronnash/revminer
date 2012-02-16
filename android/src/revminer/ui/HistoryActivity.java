@@ -103,12 +103,7 @@ public class HistoryActivity extends ListActivity {
     
     setListAdapter(adapter);
     RevminerClient.Client().addSearchListener(adapter);
-
-    lv.setOnItemClickListener(new OnItemClickListener() {
-      public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    	  RevminerClient.Client().sendSearchQuery(((TextView)view.findViewById(R.id.querytext)).getText().toString());
-      }
-    });   
+    lv.setOnItemClickListener(adapter);
   }
   
   /**
@@ -117,7 +112,7 @@ public class HistoryActivity extends ListActivity {
    *
    */
   private class SearchHistoryAdapter extends ArrayAdapter<SearchHistory>
-      implements SearchListener {
+      implements SearchListener, OnItemClickListener {
     // List of SearchHistory items
     private final List<SearchHistory> items;
 
@@ -139,15 +134,19 @@ public class HistoryActivity extends ListActivity {
               if (sh != null) {
                       TextView queryText = (TextView) view.findViewById(R.id.querytext);
                       TextView queryTime = (TextView) view.findViewById(R.id.querytime);
-                      if (queryText != null)
-                        queryText.setText(sh.getQuery());
+                      if (queryText != null) {
+                    	  String display = sh.getFriendlyName();
+                    	  if (display == null)
+                    		  display = sh.getQuery();
+                        queryText.setText(display);
+                      }
                       if(queryTime != null)
                         queryTime.setText(sh.getWhenStr());
                 }
               return view;
       }
 
-    public void onSearch(String query) {
+    public void onSearch(String query, String friendlyName) {
     	Log.d("history.onsearch", query);
     	
       // Remove the last element if the list is full
@@ -155,7 +154,7 @@ public class HistoryActivity extends ListActivity {
         items.remove(items.size());
       }
 
-      SearchHistory entry = new SearchHistory(query);
+      SearchHistory entry = new SearchHistory(query, friendlyName);
       int i = items.indexOf(entry);
 
       // if there is already an entry for the query, remove it
@@ -170,6 +169,13 @@ public class HistoryActivity extends ListActivity {
       saveHistory();
       
       notifyDataSetChanged();
+    }
+    
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    	if (position > items.size())
+    		return;
+  
+    	RevminerClient.Client().sendSearchQuery(items.get(position).getQuery(), items.get(position).getFriendlyName());
     }
   }
 }

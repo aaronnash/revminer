@@ -61,10 +61,14 @@ public class RevminerClient implements SearchDataProvider {
 	public void addSearchListener(SearchListener listener) {
 		searchListeners.add(listener);
 	}
-
+	
 	public boolean sendSearchQuery(String query) {
+		return sendSearchQuery(query, null);
+	}
+	
+	public boolean sendSearchQuery(String query, String friendlyName) {
         for (SearchListener listener : searchListeners)
-        	listener.onSearch(query);
+        	listener.onSearch(query, friendlyName);
 
         // TODO: Lets add some parallelism
         Log.d("revd", "Query for: " + query);

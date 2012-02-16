@@ -35,4 +35,15 @@ public interface SearchDataProvider {
    *     response will be returned). false when query fails to send.
    */
   public boolean sendSearchQuery(String query);
+  
+  /**
+   * Sends a search query to a remote service for processing. Upon return of 
+   * results all registered SearchResultListerns are notified.
+   * 
+   * @param query
+   * @param friendlyName the "friendly" identifier of this query to show users
+   * @return true when query is successfully sent (does not guarantee any
+   *     response will be returned). false when query fails to send.
+   */
+  public boolean sendSearchQuery(String query, String friendlyName);
 }

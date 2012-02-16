@@ -5,6 +5,7 @@
 package revminer.service;
 
 public interface SearchListener {
-	public void onSearch(String query);
+	// NOTE: friendlyName may be null
+	public void onSearch(String query, String friendlyName);
 
 }

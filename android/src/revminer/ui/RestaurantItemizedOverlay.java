@@ -47,7 +47,7 @@ public class RestaurantItemizedOverlay extends ItemizedOverlay<RestaurantOverlay
     dialog.setCancelable(true);
     dialog.setPositiveButton("View", new OnClickListener() {
         public void onClick(DialogInterface arg0, int arg1) {
-          RevminerClient.Client().sendSearchQuery(item.getRestaurant().getUniqueId());
+          RevminerClient.Client().sendSearchQuery(item.getRestaurant().getUniqueId(), item.getRestaurant().getName());
         }});
     dialog.setNegativeButton("Cancel", new OnClickListener() {
         public void onClick(DialogInterface arg0, int arg1) {}});

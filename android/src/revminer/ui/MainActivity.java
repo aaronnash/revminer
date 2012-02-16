@@ -87,7 +87,7 @@ public class MainActivity extends TabActivity implements SearchResultListener, S
 		}
 	}
 
-	public void onSearch(String query) {
+	public void onSearch(String query, String friendlyName) {
 		// hide keyboard from searchBox if it is currently visible
 	    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 	    imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
