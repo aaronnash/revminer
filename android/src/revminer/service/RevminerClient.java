@@ -6,18 +6,24 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import revminer.common.AttributeValue;
 import revminer.common.Restaurant;
-import android.content.Context;
+import revminer.common.RestaurantAttribute;
+import revminer.common.RestaurantReviewAccumlator;
+import revminer.common.RestaurantReviews;
+import revminer.common.ReviewCategory;
+import android.text.Html;
 import android.util.Log;
-import android.widget.Toast;
 
 // singleton
 public class RevminerClient implements SearchDataProvider {
   private static final String REST_URL = "http://cse454.local-box.org:3000/revminer/";
+  private static final int MAX_RESULTS = 10;
 
 	private final List<SearchResultListener> resultListeners;
 	private final List<ExactMatchListener> matchListeners;
@@ -62,11 +68,11 @@ public class RevminerClient implements SearchDataProvider {
 
         // TODO: Lets add some parallelism
         Log.d("revd", "Query for: " + query);
-
         String result = SimpleHttpClient.get(
             REST_URL + URLEncoder.encode(query).replace("+", "%20"));
         if (result == null) {
           Log.d("revd", "null result");
+          notifySearchResultEvent(new SearchResultEvent(new Exception("No response from server")));
           return false;
         }
         Log.d("revd", "results received for " + query);
@@ -85,19 +91,20 @@ public class RevminerClient implements SearchDataProvider {
               JSONObject data = results.getJSONObject("data");
 
               Iterator<String> places = data.keys();
-              while (places.hasNext()) {
+              while (places.hasNext() && res.size() < MAX_RESULTS) { // MAX 10 results
                 String place = places.next();
                 Log.d("revd", place);
 
                 Restaurant restaurant = Restaurant.getInstance(place);
                 if (restaurant == null) { // don't have it cached, we need to make an instance
-                  restaurant = getRestaurantFromMeta(place, meta);
+                  restaurant = Restaurant.createInstance(place, getAttributeMapping(place, meta.getJSONObject(place)));
                 }
                 res.add(Restaurant.getInstance(place));
               }
             }
 
             notifySearchResultEvent(new SearchResultEvent(res));
+            return true;
           } else if (object.has("match")) {
             //TODO: Finish code to parse matched object 
             Log.d("revd", "Got full match back");
@@ -106,52 +113,79 @@ public class RevminerClient implements SearchDataProvider {
             if (match.has("place") && match.has("data") && match.has("meta")
                 && match.has("attributeCategories")) {
               Log.d("revd", "All categories exist");
-              JSONObject meta = match.getJSONObject("meta"); Log.d("revd", "1");
-//              JSONObject data = match.getJSONObject("data"); Log.d("revd", "2");
-//              JSONObject place = match.getJSONObject("place"); Log.d("revd", "3");
-              JSONObject attributeCategories =
-                  match.getJSONObject("attributeCategories"); Log.d("revd", "4");
 
-//              Iterator<String> attributes = data.keys(); 
-//              while (attributes.hasNext()) {
-//                String attribute = attributes.next();
-//                String category = "";//attributeCategories.getString(attribute);
-//                Log.d("revd", attribute + " => " + category);
-//              }
+              String name = match.getString("place");
+              Restaurant restaurant = Restaurant.getInstance(name);
+              // If we don't have the restaurant and reviews cache we need to 
+              // create a new instance
+              if (restaurant == null || restaurant.getReviews() == null) {
+                JSONObject meta = match.getJSONObject("meta");
+                JSONArray data = match.getJSONArray("data");
+                JSONObject polarities = match.getJSONObject("polarities");
+                JSONObject attributeCategories =
+                    match.getJSONObject("attributeCategories");
+  
+                RestaurantReviewAccumlator accum = new RestaurantReviewAccumlator();
+  
+                for (int i = 0; i < data.length(); i++) {
+  
+                  JSONArray cur = data.getJSONArray(i);
+                  String attribute = cur.getString(0);
+                  JSONObject values = cur.getJSONObject(1);
+                  String category = attributeCategories.getString(attribute);
+  
+                  List<AttributeValue> attrValues = new ArrayList<AttributeValue>();
+  
+                  Iterator<String> itr = values.keys();
+                  while (itr.hasNext()) {
+                    String value = itr.next();
+                    Double polarity = polarities.getDouble(value);
+                    attrValues.add(AttributeValue.create(value,  polarity));
+                  }
+  
+                  RestaurantAttribute attr = new RestaurantAttribute(attribute, attrValues);
+                  accum.accumlate(ReviewCategory.fromName(category), attr);
+                }
+
+                RestaurantReviews reviews = new RestaurantReviews(accum);
+                Log.d("revd", reviews.toString());
+                restaurant = Restaurant.replaceInstance(name, getAttributeMapping(name, meta), reviews);
+              }
+              notifyExactMatchEvent(restaurant);
+              return true;
             }
           }
 
         } catch (JSONException e) {
+          notifySearchResultEvent(new SearchResultEvent(e));
           // TODO Auto-generated catch block
           e.printStackTrace();
         }
         // !
 
-		return false;
+    notifySearchResultEvent(new SearchResultEvent(new ArrayList<Restaurant>(0)));
+		return true;
 	}
+	
+	 private static final HashMap<String, String> getAttributeMapping(String place, JSONObject attributes) {
+	    HashMap<String, String> attributeMapping;
+	    
+	    try {
+	      attributeMapping = new HashMap<String, String>();
 
-	private static final Restaurant getRestaurantFromMeta(String name, JSONObject meta) {
-	  String key = name;
-	  HashMap<String, String> attributeMapping;
-	  
-    try {
-      attributeMapping = new HashMap<String, String>();
-      JSONObject attributes = attributes = meta.getJSONObject(key);
-      
-      Iterator<String> attributesIter = attributes.keys();
-      while (attributesIter.hasNext()) {
-        String attr = attributesIter.next();
-        String value = attributes.getString(attr);
-        attributeMapping.put(attr,  value);                  
-      }
-    } catch (JSONException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-      return null;
-    }
-
-     return Restaurant.createInstance(key, attributeMapping);
-	}
+	      Iterator<String> attributesIter = attributes.keys();
+	      while (attributesIter.hasNext()) {
+	        String attr = attributesIter.next();
+	        String value = Html.fromHtml(attributes.getString(attr)).toString();
+	        attributeMapping.put(attr,  value);                  
+	      }
+	      return attributeMapping;
+	    } catch (JSONException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+	      return null;
+	    }
+	  }
 
   public SearchResultEvent getLastSearchResultEvent() {
     return lastSearchResultEvent;

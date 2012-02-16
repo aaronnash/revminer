@@ -12,7 +12,6 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.google.android.maps.OverlayItem;
 
 public class ViewMapActivity extends MapActivity
     implements SearchResultListener {
@@ -51,6 +50,12 @@ public class ViewMapActivity extends MapActivity
     MapView mapView = (MapView) findViewById(R.id.mapview);
     MapController mapController = mapView.getController();
 
+    if (e.getResturants().isEmpty()) { // clear map on empty results
+      mapView.getOverlays().clear();
+      return;
+    }
+
+
     Drawable mapMarker = this.getResources().getDrawable(R.drawable.map_pointer);
     RestaurantItemizedOverlay itemizedOverlay = new RestaurantItemizedOverlay(mapMarker, this);
 
@@ -71,7 +76,8 @@ public class ViewMapActivity extends MapActivity
       maxLon = Math.max(longitude, maxLon);
       minLon = Math.min(longitude, minLon);
 
-      OverlayItem overlayItem = new OverlayItem(point, restaurant.getName(), loc.getStreetAddress());
+      RestaurantOverlayItem overlayItem = new RestaurantOverlayItem(
+          point, restaurant.getName(), loc.getStreetAddress(), restaurant);
       itemizedOverlay.addOverlay(overlayItem);
     }
 

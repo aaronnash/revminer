@@ -1,7 +1,5 @@
 package revminer.service;
 
-import android.content.Context;
-
 public interface SearchDataProvider {
   /**
    * Registers an event listen that is notified when new search results are

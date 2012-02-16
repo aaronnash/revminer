@@ -25,7 +25,9 @@ public class SearchResultEvent {
 
   private SearchResultEvent(Exception error, List<Restaurant> resturants) {
     this.error = error;
-    this.restaurants = new ArrayList<Restaurant>(resturants); // Defensive copy
+    this.restaurants = resturants != null
+                          ? new ArrayList<Restaurant>(resturants) // Defensive copy
+                          : null;
   }
 
   public Exception getError() {

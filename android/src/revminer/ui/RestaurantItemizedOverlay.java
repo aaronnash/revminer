@@ -3,15 +3,18 @@ package revminer.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import revminer.service.RevminerClient;
+
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.graphics.drawable.Drawable;
 
 import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.OverlayItem;
 
-public class RestaurantItemizedOverlay extends ItemizedOverlay<OverlayItem> {
-  private List<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
+public class RestaurantItemizedOverlay extends ItemizedOverlay<RestaurantOverlayItem> {
+  private List<RestaurantOverlayItem> mOverlays = new ArrayList<RestaurantOverlayItem>();
   private final Context mContext;
 
   public RestaurantItemizedOverlay(Drawable defaultMarker, Context context) {
@@ -20,13 +23,13 @@ public class RestaurantItemizedOverlay extends ItemizedOverlay<OverlayItem> {
   }
 
 
-  public void addOverlay(OverlayItem overlay) {
+  public void addOverlay(RestaurantOverlayItem overlay) {
     mOverlays.add(overlay);
     populate();
   }
 
   @Override
-  protected OverlayItem createItem(int i) {
+  protected RestaurantOverlayItem createItem(int i) {
     return mOverlays.get(i);
   }
 
@@ -37,10 +40,17 @@ public class RestaurantItemizedOverlay extends ItemizedOverlay<OverlayItem> {
 
   @Override
   protected boolean onTap(int index) {
-    OverlayItem item = mOverlays.get(index);
+    final RestaurantOverlayItem item = mOverlays.get(index);
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
     dialog.setTitle(item.getTitle());
     dialog.setMessage(item.getSnippet());
+    dialog.setCancelable(true);
+    dialog.setPositiveButton("View", new OnClickListener() {
+        public void onClick(DialogInterface arg0, int arg1) {
+          RevminerClient.Client().sendSearchQuery(item.getRestaurant().getUniqueId());
+        }});
+    dialog.setNegativeButton("Cancel", new OnClickListener() {
+        public void onClick(DialogInterface arg0, int arg1) {}});
     dialog.show();
     return true;
   }
