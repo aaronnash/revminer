@@ -17,11 +17,13 @@ import revminer.common.RestaurantAttribute;
 import revminer.common.RestaurantReviewAccumlator;
 import revminer.common.RestaurantReviews;
 import revminer.common.ReviewCategory;
+import android.text.Html;
 import android.util.Log;
 
 // singleton
 public class RevminerClient implements SearchDataProvider {
   private static final String REST_URL = "http://cse454.local-box.org:3000/revminer/";
+  private static final int MAX_RESULTS = 10;
 
 	private final List<SearchResultListener> resultListeners;
 	private final List<ExactMatchListener> matchListeners;
@@ -71,6 +73,7 @@ public class RevminerClient implements SearchDataProvider {
             REST_URL + URLEncoder.encode(query).replace("+", "%20"));
         if (result == null) {
           Log.d("revd", "null result");
+          notifySearchResultEvent(new SearchResultEvent(new Exception("No response from server")));
           return false;
         }
         Log.d("revd", "results received for " + query);
@@ -89,7 +92,7 @@ public class RevminerClient implements SearchDataProvider {
               JSONObject data = results.getJSONObject("data");
 
               Iterator<String> places = data.keys();
-              while (places.hasNext()) {
+              while (places.hasNext() && res.size() < MAX_RESULTS) { // MAX 10 results
                 String place = places.next();
                 Log.d("revd", place);
 
@@ -102,6 +105,7 @@ public class RevminerClient implements SearchDataProvider {
             }
 
             notifySearchResultEvent(new SearchResultEvent(res));
+            return true;
           } else if (object.has("match")) {
             //TODO: Finish code to parse matched object 
             Log.d("revd", "Got full match back");
@@ -143,22 +147,25 @@ public class RevminerClient implements SearchDataProvider {
                   RestaurantAttribute attr = new RestaurantAttribute(attribute, attrValues);
                   accum.accumlate(ReviewCategory.fromName(category), attr);
                 }
-                
+
                 RestaurantReviews reviews = new RestaurantReviews(accum);
                 Log.d("revd", reviews.toString());
                 restaurant = Restaurant.replaceInstance(name, getAttributeMapping(name, meta), reviews);
               }
               notifyExactMatchEvent(restaurant);
+              return true;
             }
           }
 
         } catch (JSONException e) {
+          notifySearchResultEvent(new SearchResultEvent(e));
           // TODO Auto-generated catch block
           e.printStackTrace();
         }
         // !
 
-		return false;
+    notifySearchResultEvent(new SearchResultEvent(new ArrayList<Restaurant>(0)));
+		return true;
 	}
 	
 	 private static final HashMap<String, String> getAttributeMapping(String place, JSONObject attributes) {
@@ -170,7 +177,7 @@ public class RevminerClient implements SearchDataProvider {
 	      Iterator<String> attributesIter = attributes.keys();
 	      while (attributesIter.hasNext()) {
 	        String attr = attributesIter.next();
-	        String value = attributes.getString(attr);
+	        String value = Html.fromHtml(attributes.getString(attr)).toString();
 	        attributeMapping.put(attr,  value);                  
 	      }
 	      return attributeMapping;

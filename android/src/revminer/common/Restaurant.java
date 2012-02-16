@@ -33,7 +33,7 @@ public class Restaurant  {
   public Restaurant(String uniqueId, String name, RestaurantLocation location,
       String phoneNumber, Map<String, String> attributes,
       RestaurantReviews reviews) {
-    this.unqiueId = unqiueId;
+    this.uniqueId = uniqueId;
     this.name = name;
     this.location = location;
     this.phoneNumber = phoneNumber;
