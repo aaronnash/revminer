@@ -30,54 +30,70 @@ public class HistoryActivity extends ListActivity {
 	private List<SearchHistory> history;
 	private static final String HISTORY_FILENAME = "search_history";
 
-	@Override
-	public void onDestroy() {
-	  // Save search history to the filesystem, truncate current file
-    BufferedWriter buf;
-    try {
-      buf = new BufferedWriter(
-          new FileWriter(getFilesDir() + HISTORY_FILENAME, false));
+// Not saving history here anymore because of the unconventional way Android handles processes
+//	@Override
+//	public void onDestroy() {
+//		saveHistory();
+//		super.onDestroy();
+//	}
+	
+	
+	private String getHistoryFilename() {
+		return getFilesDir() + HISTORY_FILENAME;
+	}
+	
+	// Save search history to the filesystem
+	private void saveHistory() {
+	    BufferedWriter buf;
+	    try {
+	      buf = new BufferedWriter(
+	    	  // truncate any existing history file
+	          new FileWriter(getHistoryFilename(), false));
 
-      for (SearchHistory hist : history) {
-        buf.write(hist.serialize() + "\n");
-      }
+	      for (SearchHistory hist : history) {
+	    	String line = hist.serialize() + "\n";
+	    	Log.d("history.save", line);
+	        buf.write(line);
+	      }
 
-      buf.close();
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+	      buf.close();
+	    } catch (IOException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+	    }		
+	}
+	
+	private ArrayList<SearchHistory> loadHistory() {
+		ArrayList<SearchHistory> result = new ArrayList<SearchHistory>();
 
-    super.onDestroy();
+		// Load history from prior session
+		try {
+			BufferedReader reader =
+					new BufferedReader(new FileReader(getHistoryFilename()));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				Log.d("history.load", line);
+				result.add(SearchHistory.deserialize(line));
+			}
+		} catch (FileNotFoundException e) {
+			// No history yet -- no error
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return result;
 	}
 
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    history = new ArrayList<SearchHistory>();
-
-    // Load history from prior session
-    try {
-      BufferedReader reader =
-          new BufferedReader(new FileReader(getFilesDir() + HISTORY_FILENAME));
-      String line;
-      while ((line = reader.readLine()) != null) {
-        Log.d("revd", line);
-        history.add(SearchHistory.deserialize(line));
-      }
-    } catch (FileNotFoundException e) {
-      // No history yet -- no error
-    } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-
+    setContentView(R.layout.history);
+    
+    history = loadHistory();
 
     adapter = new SearchHistoryAdapter(this, R.layout.history_item, history);
     
     ListView lv = getListView();
-    
     // TODO: still working to make the full background of this tab white
     // TODO: still working to define text for this list when it is empty
 //    // NOTE: the footer must be added before calling setListAdapter(...)
@@ -90,7 +106,7 @@ public class HistoryActivity extends ListActivity {
 
     lv.setOnItemClickListener(new OnItemClickListener() {
       public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-    	  RevminerClient.Client().sendSearchQuery(((TextView)view.findViewById(R.id.querytext)).getText().toString(), getApplicationContext());
+    	  RevminerClient.Client().sendSearchQuery(((TextView)view.findViewById(R.id.querytext)).getText().toString());
       }
     });   
   }
@@ -132,8 +148,8 @@ public class HistoryActivity extends ListActivity {
       }
 
     public void onSearch(String query) {
-          // TODO: better handle existing items in search history (just bring them up to the most recent)
-
+    	Log.d("history.onsearch", query);
+    	
       // Remove the last element if the list is full
       if (items.size() >= MAX_HISTORY) {
         items.remove(items.size());
@@ -148,6 +164,11 @@ public class HistoryActivity extends ListActivity {
       }
 
       insert(entry, 0);
+      
+      // saving history here as a quick fix given the odd way Android handles process closures (and associated events)
+      // TODO: this sort of sucks -- file IO shouldn't be done in the UI thread!
+      saveHistory();
+      
       notifyDataSetChanged();
     }
   }

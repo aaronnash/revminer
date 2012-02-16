@@ -1,6 +1,9 @@
 package revminer.ui;
 
 import revminer.service.RevminerClient;
+import revminer.service.SearchListener;
+import revminer.service.SearchResultEvent;
+import revminer.service.SearchResultListener;
 import revminer.ui.R;
 import android.app.TabActivity;
 import android.content.Context;
@@ -16,8 +19,9 @@ import android.widget.EditText;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
-public class MainActivity extends TabActivity {
+public class MainActivity extends TabActivity implements SearchResultListener, SearchListener {
 	
 	private EditText searchBox;
 	
@@ -36,10 +40,13 @@ public class MainActivity extends TabActivity {
 		searchBox.setOnEditorActionListener(new OnEditorActionListener() {
 	        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
 	        	if (actionId == EditorInfo.IME_ACTION_DONE)
-	                search();
+	                search(v);
 	            return false;
 	        }
 	    });
+		
+		RevminerClient.Client().addSearchResultListener(this);
+		RevminerClient.Client().addSearchListener(this);
 		
 		Log.d("revd", "MainActivity.onCreate()");
 	}
@@ -57,20 +64,30 @@ public class MainActivity extends TabActivity {
 		getTabHost().addTab(spec);
 	}
 	
-	// wrapper for search button
-	private void search(View view)
+	public void search(View view)
 	{
-		search(null);
-	}
-	
-	private void search()
-	{
-		if (searchBox.getText().toString().isEmpty())
+		if (searchBox.getText().toString().isEmpty()) 
 			return;
 		
-    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-    imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
-		RevminerClient.Client().sendSearchQuery(searchBox.getText().toString(), getApplicationContext());
-		searchBox.setText("");		
+		RevminerClient.Client().sendSearchQuery(searchBox.getText().toString());
+	}
+
+	public void onSearchResults(SearchResultEvent e) {
+		if (e.hasError()) {
+			Toast.makeText(getApplicationContext(), "search error", Toast.LENGTH_SHORT).show();
+		} else if (e.getResturants().isEmpty()) {
+			Toast.makeText(getApplicationContext(), "no results found", Toast.LENGTH_SHORT).show();
+			getTabHost().setCurrentTabByTag("History");
+		} else {
+			getTabHost().setCurrentTabByTag("Results");
+		}
+	}
+
+	public void onSearch(String query) {
+		// hide keyboard from searchBox if it is currently visible
+	    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+	    imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);
+	    
+		searchBox.setText("");
 	}
 }
