@@ -94,10 +94,8 @@ public class ResultsActivity extends ListActivity {
 	    	Log.d("results.onresults", sb.toString());
 	    	
 	    	// make our own copy of the results
-	    	items = new ArrayList<Restaurant>(e.getResturants());
-	    	
-	    	if (items.size() > 0)
-	    		Log.d("results.sampleresult", items.get(0).getName());
+	    	for (Restaurant r : e.getResturants())
+	    		items.add(r);
 	    	
 	        notifyDataSetChanged();
 		}
