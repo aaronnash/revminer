@@ -1,5 +1,6 @@
 package revminer.ui;
 
+import revminer.service.GPSClient;
 import revminer.service.RevminerClient;
 import revminer.service.SearchListener;
 import revminer.service.SearchResultEvent;
@@ -8,6 +9,7 @@ import revminer.ui.R;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -29,6 +31,8 @@ public class MainActivity extends TabActivity implements SearchResultListener, S
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		GPSClient.create((LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
 		
 		searchBox = (EditText)findViewById(R.id.searchBox);
 		

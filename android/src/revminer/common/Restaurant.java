@@ -24,10 +24,6 @@ public class Restaurant  {
 	private final HashMap<String, String> attributes;
 	private final RestaurantReviews reviews;
 
-	public Restaurant(String name) {
-    this(name, new RestaurantLocation(), "", new HashMap<String, String>(), null);
-  }
-
 	public Restaurant(String name, RestaurantLocation location,
 	    String phoneNumber, Map<String, String> attributes) {
 	  this(name, location, phoneNumber, attributes, null);
@@ -130,6 +126,7 @@ public class Restaurant  {
 		return name;
 	}
 
+	// may return null
 	public RestaurantLocation getLocation() {
 		return location;
 	}

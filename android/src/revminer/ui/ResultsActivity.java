@@ -4,26 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import revminer.common.Restaurant;
-import revminer.common.RestaurantAttribute;
-import revminer.common.RestaurantReviewCategory;
-import revminer.common.RestaurantReviews;
-import revminer.common.SearchHistory;
+import revminer.service.GPSClient;
 import revminer.service.RevminerClient;
-import revminer.service.SearchListener;
 import revminer.service.SearchResultEvent;
 import revminer.service.SearchResultListener;
 import revminer.ui.R;
-import android.app.Activity;
 import android.app.ListActivity;
-import android.app.TabActivity;
 import android.content.Context;
+import android.location.Location;
+import android.location.LocationManager;
+import android.location.LocationProvider;
 import android.os.Bundle;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +36,9 @@ public class ResultsActivity extends ListActivity {
 	            super(context, textViewResourceId, list);
 	            this.items = list;
 	    }
+	    
+	    
+	    
 	
 	    @Override
 	    public View getView(int position, View convertView, ViewGroup parent) {
@@ -52,17 +50,43 @@ public class ResultsActivity extends ListActivity {
 	            Restaurant r = items.get(position);
 	            if (r != null) {
 	                    TextView restaurantName = (TextView) view.findViewById(R.id.restaurantName);
+	                    TextView status = (TextView) view.findViewById(R.id.status);
+	                    TextView price = (TextView) view.findViewById(R.id.price);
+	                    TextView distance = (TextView) view.findViewById(R.id.distance);
+	                    TextView distanceSuffix = (TextView) view.findViewById(R.id.distanceSuffix);
+	                    
+//	                    Log.d("results.getView", r.getName());
+	                    
+	                    restaurantName.setText(r.getName());
+	                    
+	                    // TODO: determine open/closed status of restaurant
+	                    status.setText("");
+	                    
+	                    // TODO: lookup price of restaurant
+	                    price.setText("$$");
+	                    
+	                    Location curLocation = GPSClient.Client().getLocation();
+	                    
+	                    if (curLocation == null || r.getLocation() == null) {
+	                    	distance.setText("");
+	                    	distanceSuffix.setText("");
+	                    } else {
+	                    	float miles = r.getLocation().getDistance(curLocation);
+	                    	
+	                      	// round to one decimal place
+	                    	miles = (float)Math.round(miles * 10) / 10;
+	                    	
+	                    	distance.setText(Float.toString(miles));
+	                    	distanceSuffix.setText("mi");
+	                    }
+	                    
+	                    
 	                    
 //	                    TextView polarity1 = (TextView) view.findViewById(R.id.polarity1);
 //	                    TextView polarity2 = (TextView) view.findViewById(R.id.polarity2);
 //	                    TextView polarity3 = (TextView) view.findViewById(R.id.polarity3);
 //	                    TextView polarity4 = (TextView) view.findViewById(R.id.polarity4);
 //	                    TextView polarity5 = (TextView) view.findViewById(R.id.polarity5);
-	                    TextView distance = (TextView) view.findViewById(R.id.distance);
-	                    
-	                    Log.d("results.getView", r.getName());
-	                    
-	                    restaurantName.setText(r.getName());
 //	                    
 //	            		REVIEW_FOOD,
 //	            		REVIEW_SERVICE,
@@ -75,8 +99,6 @@ public class ResultsActivity extends ListActivity {
 	                    
 	                    
 	                    // TODO: update width of each polarity box
-	                    // TODO: actually calculate the distance!
-	                    distance.setText("0.3");
                 }
 	            return view;
 	    }
@@ -85,7 +107,7 @@ public class ResultsActivity extends ListActivity {
 	    	items.clear();
 	    	
 	    	if (e.hasError()) {
-	    		Log.d("results.onresults", "got error results");
+	    		notifyDataSetChanged();
 	    		return;
 	    	}
 	    	
@@ -113,8 +135,6 @@ public class ResultsActivity extends ListActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.results);
     
-    Log.d("results.oncreate", "hello");
-    
 	// initialize results
     List<Restaurant> results;
     SearchResultEvent e = RevminerClient.Client().getLastSearchResultEvent();
@@ -123,14 +143,6 @@ public class ResultsActivity extends ListActivity {
     } else {
     	results = new ArrayList<Restaurant>(e.getResturants());
     }
-//    results.add(new Restaurant("one"));
-//    results.add(new Restaurant("two"));
-//    results.add(new Restaurant("three"));
-//    results.add(new Restaurant("four"));
-//    results.add(new Restaurant("five"));
-//    results.add(new Restaurant("six"));
-    
-    
     
     adapter = new ResultsAdapter(this, R.layout.result_item, results);
     setListAdapter(adapter);
@@ -138,8 +150,4 @@ public class ResultsActivity extends ListActivity {
     getListView().setOnItemClickListener(adapter);
     
   }
-  
-//  public void showTab() {
-//	  ((TabActivity)this.getParent()).getTabHost().setCurrentTabByTag("Results");
-//  }
 }
