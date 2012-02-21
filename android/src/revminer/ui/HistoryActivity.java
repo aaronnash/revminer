@@ -80,7 +80,26 @@ public class HistoryActivity extends ListActivity {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		
 		}
+		
+		
+		// TODO: nuke all this code. It only exists as a temporary way to fix up bad history files quickly
+		// for our class presentation.
+		if (true) {
+			boolean badHistory = false;
+			for (SearchHistory h : result) {
+				if (h.getFriendlyName().equals("null"))
+					badHistory = true;
+			}
+			if (badHistory) {
+				Log.d("history.fn", "history reset");
+				result.clear();
+				result.add(new SearchHistory("margaritas", "margaritas"));
+				result.add(new SearchHistory("mexican", "mexican"));
+			}
+		}
+		
 		return result;
 	}
 
@@ -116,6 +135,8 @@ public class HistoryActivity extends ListActivity {
     // List of SearchHistory items
     private final List<SearchHistory> items;
 
+    
+    // must always be > 0
     public static final int MAX_HISTORY = 20;
 
       public SearchHistoryAdapter(Context context, int textViewResourceId, List<SearchHistory> list) {
@@ -147,11 +168,11 @@ public class HistoryActivity extends ListActivity {
       }
 
     public void onSearch(String query, String friendlyName) {
-    	Log.d("history.onsearch", query);
+    	Log.d("history.onsearch", query + " " + friendlyName);
     	
       // Remove the last element if the list is full
       if (items.size() >= MAX_HISTORY) {
-        items.remove(items.size());
+        items.remove(items.size() - 1);
       }
 
       SearchHistory entry = new SearchHistory(query, friendlyName);

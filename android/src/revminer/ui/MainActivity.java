@@ -9,6 +9,7 @@ import revminer.ui.R;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,6 +32,8 @@ public class MainActivity extends TabActivity implements SearchResultListener, S
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_NOSENSOR);
 		
 		GPSClient.create((LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
 		

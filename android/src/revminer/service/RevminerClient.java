@@ -63,7 +63,7 @@ public class RevminerClient implements SearchDataProvider {
 	}
 	
 	public boolean sendSearchQuery(String query) {
-		return sendSearchQuery(query, null);
+		return sendSearchQuery(query, query);
 	}
 	
 	public boolean sendSearchQuery(String query, String friendlyName) {

@@ -45,8 +45,11 @@ public class GPSClient implements LocationListener {
 	}
 	
 	public static GPSClient create(LocationManager locationManager) {
-		if (singleton != null)
-			throw new IllegalStateException();
+		if (singleton != null) {
+			// TODO: better manage how our code responds to screen rotations
+			//throw new IllegalStateException();
+			return singleton;
+		}
 		
 		singleton = new GPSClient(locationManager);
 		
