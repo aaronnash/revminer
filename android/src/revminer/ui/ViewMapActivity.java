@@ -12,11 +12,15 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.google.android.maps.MyLocationOverlay;
 
 public class ViewMapActivity extends MapActivity
     implements SearchResultListener {
   private static final double DEG_TO_MICRODEG = 1000000d;
   private static final double PADDING = 1.25;
+
+  private RestaurantItemizedOverlay currentResultsOverlay = null;
+  private MyLocationOverlay myLocOverlay; 
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -28,6 +32,11 @@ public class ViewMapActivity extends MapActivity
 
     // Set up to listen to events
     RevminerClient.Client().addSearchResultListener(this);
+
+    // Initialize my location overlay and display it
+    myLocOverlay = new MyLocationOverlay(this, mapView);
+    mapView.getOverlays().add(myLocOverlay);
+
     // Load the most recent results if they exist
     SearchResultEvent event =
         RevminerClient.Client().getLastSearchResultEvent();
@@ -37,12 +46,24 @@ public class ViewMapActivity extends MapActivity
   }
 
   @Override
+  public void onResume() {
+    super.onResume();
+    myLocOverlay.enableMyLocation();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    myLocOverlay.disableMyLocation();
+  }
+
+  @Override
   protected boolean isRouteDisplayed() {
     // TODO Auto-generated method stub
     return false;
   }
 
-  public void onSearchResults(SearchResultEvent e) {
+  synchronized public void onSearchResults(SearchResultEvent e) {
     if (e.hasError()) { // Don't do anything if there was an error
       return;
     }
@@ -81,8 +102,11 @@ public class ViewMapActivity extends MapActivity
       itemizedOverlay.addOverlay(overlayItem);
     }
 
-    mapView.getOverlays().clear(); // Remove the old markers
+    if (currentResultsOverlay != null) {
+      mapView.getOverlays().remove(currentResultsOverlay); // Remove the old markers
+    }
     mapView.getOverlays().add(itemizedOverlay); // Add  the new markers
+    currentResultsOverlay = itemizedOverlay;
 
     // Reposition the map to show all the current results
     mapController.zoomToSpan((int)(Math.abs(maxLat - minLat) * PADDING),
