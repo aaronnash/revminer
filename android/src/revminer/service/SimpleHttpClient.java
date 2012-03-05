@@ -19,8 +19,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HTTP;
 
+import android.util.Log;
+
 public abstract class SimpleHttpClient {
   public static String get(String url) {
+    Log.d("revd", "HTTP GET " + url);
     HttpClient httpClient = new DefaultHttpClient();
     HttpGet httpGet = new HttpGet(url);
     HttpResponse response;

@@ -12,8 +12,6 @@ import revminer.ui.R;
 import android.app.ListActivity;
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -122,17 +120,17 @@ public class ResultsActivity extends ListActivity {
 	    	Log.d("results.onresults", sb.toString());
 	    	
 	    	// make our own copy of the results
-	    	for (Restaurant r : e.getResturants())
-	    		items.add(r);
+	    	items.addAll(e.getResturants());
 	    	
-	        notifyDataSetChanged();
+	      notifyDataSetChanged();
 		}
 		
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			if (position > items.size())
 				return;
 
-			RevminerClient.Client().sendSearchQuery(items.get(position).getName());
+			Restaurant restaurant = items.get(position);
+			RevminerClient.Client().sendSearchQuery(restaurant.getUniqueId(), restaurant.getName());
 		}
   }
 	

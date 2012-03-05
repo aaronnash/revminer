@@ -17,12 +17,14 @@ import revminer.common.RestaurantAttribute;
 import revminer.common.RestaurantReviewAccumlator;
 import revminer.common.RestaurantReviews;
 import revminer.common.ReviewCategory;
+import android.location.Location;
 import android.text.Html;
 import android.util.Log;
 
 // singleton
 public class RevminerClient implements SearchDataProvider {
-  private static final String REST_URL = "http://cse454.local-box.org:3000/revminer/";
+  //private static final String REST_URL = "http://cse454.local-box.org:3000/revminer/";
+  private static final String REST_URL = "http://ec2-107-20-115-97.compute-1.amazonaws.com:8080/revminer/";
   private static final int MAX_RESULTS = 10;
 
 	private final List<SearchResultListener> resultListeners;
@@ -67,105 +69,127 @@ public class RevminerClient implements SearchDataProvider {
 	}
 	
 	public boolean sendSearchQuery(String query, String friendlyName) {
-        for (SearchListener listener : searchListeners)
-        	listener.onSearch(query, friendlyName);
+    for (SearchListener listener : searchListeners)
+    	listener.onSearch(query, friendlyName);
 
-        // TODO: Lets add some parallelism
-        Log.d("revd", "Query for: " + query);
-        String result = SimpleHttpClient.get(
-            REST_URL + URLEncoder.encode(query).replace("+", "%20"));
-        if (result == null) {
-          Log.d("revd", "null result");
-          notifySearchResultEvent(new SearchResultEvent(new Exception("No response from server")));
-          return false;
-        }
-        Log.d("revd", "results received for " + query);
+    if (Restaurant.getInstance(query) != null
+        && Restaurant.getInstance(query).getReviews() != null) {
+      Log.d("revd", "Found exact match in cache");
+      notifyExactMatchEvent(Restaurant.getInstance(query));
+      return true;
+    }
 
-        // TODO: update once true query logic is implemented
-        // TODO: handle case when we get "suggestions" or "match"
-        try {
-          JSONObject object = (JSONObject) new JSONTokener(result).nextValue();
+    // TODO: Lets add some parallelism
+    Log.d("revd", "Query for: " + query);
 
-          if (object.has("results")) {
-            List<Restaurant> res = new ArrayList<Restaurant>();
-            JSONObject results = object.getJSONObject("results");
+    String requestUrl;
 
-            if (results.has("meta") && results.has("data")) {
-              JSONObject meta = results.getJSONObject("meta");
-              JSONObject data = results.getJSONObject("data");
+    // If we have location we will add it to the query
+    Location loc = GPSClient.Client().getLocation();
+    if (loc != null) { // Location is available
+      requestUrl = REST_URL + URLEncoder.encode(query).replace("+", "%20")
+            + "/" + loc.getLatitude() + "/" + loc.getLongitude();
+      Log.d("revd", "Query location: " + loc.getLatitude() + ", " + loc.getLongitude());
+    } else { // Location is not available
+      requestUrl = REST_URL + URLEncoder.encode(query).replace("+", "%20");
+      Log.d("revd", "Query without location");
+    }
 
-              Iterator<String> places = data.keys();
-              while (places.hasNext() && res.size() < MAX_RESULTS) { // MAX 10 results
-                String place = places.next();
-                Log.d("revd", place);
+    String result = SimpleHttpClient.get(requestUrl);
+    if (result == null) {
+      Log.d("revd", "null result");
+      notifySearchResultEvent(new SearchResultEvent(new Exception("No response from server")));
+      return false;
+    }
+    Log.d("revd", "results received for " + query);
 
-                Restaurant restaurant = Restaurant.getInstance(place);
-                if (restaurant == null) { // don't have it cached, we need to make an instance
-                  restaurant = Restaurant.createInstance(place, getAttributeMapping(place, meta.getJSONObject(place)));
-                }
-                res.add(Restaurant.getInstance(place));
-              }
+    // TODO: update once true query logic is implemented
+    // TODO: handle case when we get "suggestions" or "match"
+    try {
+      JSONObject object = (JSONObject) new JSONTokener(result).nextValue();
+
+      if (object.has("results")) {
+        List<Restaurant> res = new ArrayList<Restaurant>();
+        JSONObject results = object.getJSONObject("results");
+
+        if (results.has("meta") && results.has("data")) {
+          JSONObject meta = results.getJSONObject("meta");
+          JSONObject data = results.getJSONObject("data");
+
+          Iterator<String> places = data.keys();
+          while (places.hasNext() && res.size() < MAX_RESULTS) { // MAX 10 results
+            String place = places.next();
+            Log.d("revd", place);
+
+            Restaurant restaurant = Restaurant.getInstance(place);
+            if (restaurant == null) { // don't have it cached, we need to make an instance
+              restaurant = Restaurant.createInstance(place, getAttributeMapping(place, meta.getJSONObject(place)));
             }
-
-            notifySearchResultEvent(new SearchResultEvent(res));
-            return true;
-          } else if (object.has("match")) {
-            //TODO: Finish code to parse matched object 
-            Log.d("revd", "Got full match back");
-
-            JSONObject match = object.getJSONObject("match");
-            if (match.has("place") && match.has("data") && match.has("meta")
-                && match.has("attributeCategories")) {
-              Log.d("revd", "All categories exist");
-
-              String name = match.getString("place");
-              Restaurant restaurant = Restaurant.getInstance(name);
-              // If we don't have the restaurant and reviews cache we need to 
-              // create a new instance
-              if (restaurant == null || restaurant.getReviews() == null) {
-                JSONObject meta = match.getJSONObject("meta");
-                JSONArray data = match.getJSONArray("data");
-                JSONObject polarities = match.getJSONObject("polarities");
-                JSONObject attributeCategories =
-                    match.getJSONObject("attributeCategories");
-  
-                RestaurantReviewAccumlator accum = new RestaurantReviewAccumlator();
-  
-                for (int i = 0; i < data.length(); i++) {
-  
-                  JSONArray cur = data.getJSONArray(i);
-                  String attribute = cur.getString(0);
-                  JSONObject values = cur.getJSONObject(1);
-                  String category = attributeCategories.getString(attribute);
-  
-                  List<AttributeValue> attrValues = new ArrayList<AttributeValue>();
-  
-                  Iterator<String> itr = values.keys();
-                  while (itr.hasNext()) {
-                    String value = itr.next();
-                    Double polarity = polarities.getDouble(value);
-                    attrValues.add(AttributeValue.create(value,  polarity));
-                  }
-  
-                  RestaurantAttribute attr = new RestaurantAttribute(attribute, attrValues);
-                  accum.accumlate(ReviewCategory.fromName(category), attr);
-                }
-
-                RestaurantReviews reviews = new RestaurantReviews(accum);
-                Log.d("revd", reviews.toString());
-                restaurant = Restaurant.replaceInstance(name, getAttributeMapping(name, meta), reviews);
-              }
-              notifyExactMatchEvent(restaurant);
-              return true;
-            }
+            res.add(Restaurant.getInstance(place));
           }
-
-        } catch (JSONException e) {
-          notifySearchResultEvent(new SearchResultEvent(e));
-          // TODO Auto-generated catch block
-          e.printStackTrace();
         }
-        // !
+
+        notifySearchResultEvent(new SearchResultEvent(res));
+        return true;
+      } else if (object.has("match")) {
+        //TODO: Finish code to parse matched object 
+        Log.d("revd", "Got full match back");
+
+        JSONObject match = object.getJSONObject("match");
+        if (match.has("place") && match.has("data") && match.has("meta")
+            && match.has("attributeCategories")) {
+          Log.d("revd", "All categories exist");
+
+          String name = match.getString("place");
+          Restaurant restaurant = Restaurant.getInstance(name);
+          // If we don't have the restaurant and reviews cache we need to 
+          // create a new instance
+          if (restaurant == null || restaurant.getReviews() == null) {
+            JSONObject meta = match.getJSONObject("meta");
+            JSONArray data = match.getJSONArray("data");
+            // JSONObject polarities = match.getJSONObject("polarities"); // This data is not in our API version
+            JSONObject attributeCategories =
+                match.getJSONObject("attributeCategories");
+
+            RestaurantReviewAccumlator accum = new RestaurantReviewAccumlator();
+
+            for (int i = 0; i < data.length(); i++) {
+
+              JSONArray cur = data.getJSONArray(i);
+              String attribute = cur.getString(0);
+              JSONObject values = cur.getJSONObject(1);
+              String category = attributeCategories.getString(attribute);
+
+              List<AttributeValue> attrValues = new ArrayList<AttributeValue>();
+
+              Iterator<String> itr = values.keys();
+              while (itr.hasNext()) {
+                String str = itr.next();
+                String value = str.substring(2).replace("!", "not ");
+                
+                Double polarity = Double.parseDouble(str.substring(0, 2))/10d; // polarities.getDouble(value);
+                attrValues.add(AttributeValue.create(value,  polarity));
+              }
+
+              RestaurantAttribute attr = new RestaurantAttribute(attribute, attrValues);
+              accum.accumlate(ReviewCategory.fromName(category), attr);
+            }
+
+            RestaurantReviews reviews = new RestaurantReviews(accum);
+            Log.d("revd", reviews.toString());
+            restaurant = Restaurant.replaceInstance(name, getAttributeMapping(name, meta), reviews);
+          }
+          notifyExactMatchEvent(restaurant);
+          return true;
+        }
+      }
+
+    } catch (JSONException e) {
+      notifySearchResultEvent(new SearchResultEvent(e));
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+    // !
 
     notifySearchResultEvent(new SearchResultEvent(new ArrayList<Restaurant>(0)));
 		return true;
