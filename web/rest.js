@@ -27,9 +27,9 @@ var router = new(journey.Router);
 // Create the routing table
 router.map(function() {
 
-    // GET /revminer/:query
-    this.get(/revminer\/(.*)\/(.*)\/(.*)$/).bind(function(req, res, text, lat, long) {
-        console.log("Revminer query: '" + unescape(text) + "' (" + lat + ")");
+    // GET /revminer/:query/:lat/:long
+    this.get(/revminer\/gps\/(.*)\/(.*)\/(.*)$/).bind(function(req, res, text, lat, long) {
+        console.log("Revminer query: '" + unescape(text) + "' (" + lat + ", " + long + ")");
         
         req.connection.setTimeout(10000);
         
@@ -44,6 +44,25 @@ router.map(function() {
         // search revminer
         if (text !== '')
             revminerSocket.emit('search', {text: unescape(text).replace('not ', '!'), loc: {latitude: lat, longitude: long}});
+    });
+
+    // GET /revminer/:query
+    this.get(/revminer\/nogps\/(.*)$/).bind(function(req, res, text) {
+        console.log("Revminer query: '" + unescape(text));
+
+        req.connection.setTimeout(10000);
+
+        // Revminer event handlers
+        revminerSocket.on('results',     function(data) { res.send({"results": data}); });
+        revminerSocket.on('suggestions', function(data) { res.send({"suggestions": data}); });
+        revminerSocket.on('match',       function(data) { 
+            res.send({"match": data}); 
+            revminerSocket.emit('search', '');  // null search to clear gunk
+        });
+
+        // search revminer
+        if (text !== '')
+            revminerSocket.emit('search', {text: unescape(text).replace('not ', '!')});
     });
 });
 

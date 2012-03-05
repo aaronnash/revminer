@@ -151,7 +151,9 @@ function handleClientSearch(client) {
 		console.log(query.text);
 		console.log(query.loc);
 		console.log("--- !search ---");
-		loc = {latitude: new Number(query.loc.latitude), longitude: new Number(query.loc.longitude)};
+		loc = query.loc != null
+						? {latitude: new Number(query.loc.latitude), longitude: new Number(query.loc.longitude)}
+						: null;
 		query = query.text;
 		
 		var interesting = false;
@@ -271,7 +273,9 @@ function handleClientSearch(client) {
 							queryMeta[cc] = metadata[cc];
 							console.log('latitude: ' + metadata[cc].Latitude);
 							console.log('  longitude: ' + metadata[cc].Longitude);
-							console.log('  distance: ' + calcDistance({longitude: new Number(metadata[cc].Longitude), latitude: new Number(metadata[cc].Latitude)}, loc) + ' mi');
+							if (loc != null) {
+								console.log('  distance: ' + calcDistance({longitude: new Number(metadata[cc].Longitude), latitude: new Number(metadata[cc].Latitude)}, loc) + ' mi');
+							}
 						}
 
 						sendMatch[client.id] = query;
@@ -509,6 +513,10 @@ function clausesToQueries(processed) {
 
 /* Narrows down a list of canidates based on their interestingness
  *
+ * Parameters:
+ *   location: location may be null, in which case it is disregarded when
+ *             computing interestingness.
+ * 
  * Returns up to SEND_LIMIT canidates
  */
 function topCandidates(candidates, location) {
@@ -524,7 +532,9 @@ function topCandidates(candidates, location) {
 	
 	for (var candidate in candidates) {
 		console.log("  candidate: " + candidate);
-		var dist = calcDistance({longitude: metadata[candidate].Longitude, latitude: metadata[candidate].Latitude}, location);
+		var dist = location != null
+								? calcDistance({longitude: metadata[candidate].Longitude, latitude: metadata[candidate].Latitude}, location)
+								: 0;
 		console.log("  candidates[candidate]: " + candidates[candidate]);
 		candidatesArray.push([candidate, candidates[candidate], dist]);
 

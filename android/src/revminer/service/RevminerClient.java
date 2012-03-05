@@ -87,11 +87,11 @@ public class RevminerClient implements SearchDataProvider {
     // If we have location we will add it to the query
     Location loc = GPSClient.Client().getLocation();
     if (loc != null) { // Location is available
-      requestUrl = REST_URL + URLEncoder.encode(query).replace("+", "%20")
+      requestUrl = REST_URL + "gps/" + URLEncoder.encode(query).replace("+", "%20")
             + "/" + loc.getLatitude() + "/" + loc.getLongitude();
       Log.d("revd", "Query location: " + loc.getLatitude() + ", " + loc.getLongitude());
     } else { // Location is not available
-      requestUrl = REST_URL + URLEncoder.encode(query).replace("+", "%20");
+      requestUrl = REST_URL + "nogps/" + URLEncoder.encode(query).replace("+", "%20");
       Log.d("revd", "Query without location");
     }
 
