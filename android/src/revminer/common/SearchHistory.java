@@ -2,8 +2,6 @@ package revminer.common;
 
 import java.util.Date;
 
-import android.util.Log;
-
 public class SearchHistory {
 	private String query;
 	private String friendlyName;

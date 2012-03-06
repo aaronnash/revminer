@@ -13,21 +13,49 @@ import revminer.common.Restaurant;
 
 public class SearchResultEvent {
   private final Exception error;
+  private final Restaurant exactMatch;
   private final List<Restaurant> restaurants;
 
   public SearchResultEvent(Exception error) {
-    this(error, null);
+    this(error, null, null);
   }
 
-  public SearchResultEvent(List<Restaurant> resturants) {
-    this(null, resturants);
+  public SearchResultEvent(List<Restaurant> restaurant) {
+    this(null, null, restaurant);
   }
 
-  private SearchResultEvent(Exception error, List<Restaurant> resturants) {
+  public SearchResultEvent(Restaurant exactMatch) {
+    this(null, exactMatch, null);
+  }
+
+  private SearchResultEvent(Exception error, Restaurant exactMatch,
+      List<Restaurant> resturants) {
     this.error = error;
+    this.exactMatch = exactMatch;
     this.restaurants = resturants != null
                           ? new ArrayList<Restaurant>(resturants) // Defensive copy
                           : null;
+  }
+
+  /*
+   * Static constructor for an error
+   */
+  public static SearchResultEvent of(Exception e) {
+    return new SearchResultEvent(e);
+  }
+
+  /*
+   * Static constructor for result list
+   */
+  public static SearchResultEvent of(List<Restaurant> restaurants) {
+    return new SearchResultEvent(restaurants);
+  }
+
+  /*
+   * Static constructor for exact match
+   */
+  public static SearchResultEvent of(Restaurant exactMatch) {
+    return new SearchResultEvent(exactMatch);
   }
 
   public Exception getError() {
@@ -37,18 +65,35 @@ public class SearchResultEvent {
   public boolean hasError() {
     return error != null;
   }
-  
+
+  public boolean isExactMatch() {
+    return exactMatch != null;
+  }
+
   /**
-   * Requires that hasError() == false
+   * Requires that hasError() == false && isExactMatch() == false
    * 
    * @return {@link List<Restaurant>} of all restaurants in the search results 
    */
   public List<Restaurant> getResturants() {
-    if (hasError()) {
-      throw new IllegalStateException("hasError()");
+    if (hasError() || isExactMatch()) {
+      throw new IllegalStateException("hasError() || isExactMatch()");
     }
 
     // Clients should not modify internal list
     return Collections.unmodifiableList(restaurants);
+  }
+
+  /**
+   * Requires that hasError() == false && isExactMatch() == false
+   * 
+   * @return A {@link Restaurant} that was determined to be an exact match 
+   */
+  public Restaurant getExactMatch() {
+    if (hasError() || !isExactMatch()) {
+      throw new IllegalStateException("hasError() || !isExactMatch()");
+    }
+
+    return exactMatch;
   }
 }

@@ -11,15 +11,6 @@ public interface SearchDataProvider {
   public void addSearchResultListener(SearchResultListener listener);
 
   /**
-   * Registers an event listen that is notified when an exact match is returned
-   * fromthe server
-   *
-   * @param listener {@link ExactMatchListener} to be notified an exact match
-   *    is available
-   */
-  public void addExactMatchListener(ExactMatchListener listener);
-
-  /**
    * @return Last {@link SearchResultEvent} fired, or null if none.
    */
   public SearchResultEvent getLastSearchResultEvent();

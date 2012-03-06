@@ -1,7 +1,6 @@
 package revminer.common;
 
 import android.location.Location;
-import android.util.Log;
 
 public class RestaurantLocation {
   private final double latitude;

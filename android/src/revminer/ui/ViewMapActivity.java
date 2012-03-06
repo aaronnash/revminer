@@ -1,11 +1,16 @@
 package revminer.ui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import revminer.common.Restaurant;
 import revminer.common.RestaurantLocation;
+import revminer.service.GPSClient;
 import revminer.service.RevminerClient;
 import revminer.service.SearchResultEvent;
 import revminer.service.SearchResultListener;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
 import android.os.Bundle;
 
 import com.google.android.maps.GeoPoint;
@@ -71,22 +76,33 @@ public class ViewMapActivity extends MapActivity
     MapView mapView = (MapView) findViewById(R.id.mapview);
     MapController mapController = mapView.getController();
 
-    if (e.getResturants().isEmpty()) { // clear map on empty results
+    if (!e.isExactMatch() && e.getResturants().isEmpty()) { // clear map on empty results
       mapView.getOverlays().clear();
       return;
     }
 
+    // List of restaurants to display
+    List<Restaurant> restaurants;
+    if (e.isExactMatch()) {
+      restaurants = new ArrayList<Restaurant>();
+      restaurants.add(e.getExactMatch());
+    } else {
+      restaurants = e.getResturants();
+    }
+
+    // Current location
+    Location myLoc = GPSClient.Client().getLocation();
 
     Drawable mapMarker = this.getResources().getDrawable(R.drawable.map_pointer);
     RestaurantItemizedOverlay itemizedOverlay = new RestaurantItemizedOverlay(mapMarker, this);
 
     // We'll use these to find the appropriate bounding box for the map
-    int minLat = Integer.MAX_VALUE;
-    int maxLat = Integer.MIN_VALUE;
-    int minLon = Integer.MAX_VALUE;
-    int maxLon = Integer.MIN_VALUE;
+    int minLat = myLoc != null ? (int)(myLoc.getLatitude() * DEG_TO_MICRODEG) : Integer.MAX_VALUE;
+    int maxLat = myLoc != null ? (int)(myLoc.getLatitude() * DEG_TO_MICRODEG) : Integer.MIN_VALUE;
+    int minLon = myLoc != null ? (int)(myLoc.getLongitude() * DEG_TO_MICRODEG) : Integer.MAX_VALUE;
+    int maxLon = myLoc != null ? (int)(myLoc.getLongitude() * DEG_TO_MICRODEG) : Integer.MIN_VALUE;
 
-    for (Restaurant restaurant : e.getResturants()) {
+    for (Restaurant restaurant : restaurants) {
       RestaurantLocation loc = restaurant.getLocation();
       int latitude = (int)(loc.getLatitude() * DEG_TO_MICRODEG);
       int longitude = (int)(loc.getLongitude() * DEG_TO_MICRODEG);

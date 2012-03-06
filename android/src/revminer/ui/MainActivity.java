@@ -6,6 +6,7 @@ import revminer.service.SearchListener;
 import revminer.service.SearchResultEvent;
 import revminer.service.SearchResultListener;
 import revminer.ui.R;
+import android.app.ProgressDialog;
 import android.app.TabActivity;
 import android.content.Context;
 import android.content.Intent;
@@ -27,6 +28,7 @@ import android.widget.Toast;
 public class MainActivity extends TabActivity implements SearchResultListener, SearchListener {
 	
 	private EditText searchBox;
+	private ProgressDialog dialog;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,9 +82,13 @@ public class MainActivity extends TabActivity implements SearchResultListener, S
 	}
 
 	public void onSearchResults(SearchResultEvent e) {
+	  dialog.dismiss();
+
 		if (e.hasError()) {
-			Toast.makeText(getApplicationContext(), "search error", Toast.LENGTH_SHORT).show();
-		} else if (e.getResturants().isEmpty()) {
+			Toast.makeText(getApplicationContext(), "Error:" + e.getError(), Toast.LENGTH_SHORT).show();
+		} else if (e.isExactMatch()) {
+		  Toast.makeText(getApplicationContext(), "Exact match", Toast.LENGTH_SHORT).show();
+	  } else if (e.getResturants().isEmpty()) {
 			Toast.makeText(getApplicationContext(), "no results found", Toast.LENGTH_SHORT).show();
 			getTabHost().setCurrentTabByTag("History");
 		} else {
@@ -91,6 +97,7 @@ public class MainActivity extends TabActivity implements SearchResultListener, S
 	}
 
 	public void onSearch(String query, String friendlyName) {
+	  dialog = ProgressDialog.show(this, "", "Loading. Please wait...", true);
 		// hide keyboard from searchBox if it is currently visible
 	    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 	    imm.hideSoftInputFromWindow(searchBox.getWindowToken(), 0);

@@ -108,21 +108,26 @@ public class ResultsActivity extends ListActivity {
 	    }
 
 		public void onSearchResults(SearchResultEvent e) {
-	    	items.clear();
-	    	
-	    	if (e.hasError()) {
-	    		notifyDataSetChanged();
-	    		return;
-	    	}
-	    	
-	    	StringBuilder sb = new StringBuilder();
-	    	sb.append("got ").append(e.getResturants().size()).append(" results");
-	    	Log.d("results.onresults", sb.toString());
-	    	
-	    	// make our own copy of the results
-	    	items.addAll(e.getResturants());
-	    	
-	      notifyDataSetChanged();
+		  // If its an exact match keep the old results and do nothing
+		  if (e.isExactMatch()) {
+		    return;
+		  }
+
+	    items.clear();
+
+	    if (e.hasError()) {
+	    	notifyDataSetChanged();
+	    	return;
+	    }
+
+	    StringBuilder sb = new StringBuilder();
+	    sb.append("got ").append(e.getResturants().size()).append(" results");
+	    Log.d("results.onresults", sb.toString());
+
+	    // make our own copy of the results
+	    items.addAll(e.getResturants());
+
+	    notifyDataSetChanged();
 		}
 		
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -142,7 +147,7 @@ public class ResultsActivity extends ListActivity {
 	// initialize results
     List<Restaurant> results;
     SearchResultEvent e = RevminerClient.Client().getLastSearchResultEvent();
-    if (e == null || e.hasError()) {
+    if (e == null || e.hasError() || e.isExactMatch()) {
     	results = new ArrayList<Restaurant>();
     } else {
     	results = new ArrayList<Restaurant>(e.getResturants());

@@ -17,14 +17,25 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 
 import android.util.Log;
 
 public abstract class SimpleHttpClient {
+  private static final int DEFAULT_TIMEOUT_MS = 5000;
+  private static final HttpParams DEFAULT_PARAMS;
+  static {
+    HttpParams temp = new BasicHttpParams();
+    HttpConnectionParams.setSoTimeout(temp, DEFAULT_TIMEOUT_MS);
+    DEFAULT_PARAMS = temp;
+  }
+  
   public static String get(String url) {
     Log.d("revd", "HTTP GET " + url);
-    HttpClient httpClient = new DefaultHttpClient();
+    HttpClient httpClient = new DefaultHttpClient(DEFAULT_PARAMS);
     HttpGet httpGet = new HttpGet(url);
     HttpResponse response;
     try {
